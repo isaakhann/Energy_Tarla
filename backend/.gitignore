@@ -1,0 +1,8 @@
+*.xlsx
+*.csv
+*/static
+*.geojson
+static/analysis/
+venv/
+__pycache__/
+*.pyc
