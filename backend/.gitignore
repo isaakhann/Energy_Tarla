@@ -1,8 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+env/
+energy_tarla/
+
+# Secrets
+.env
+.env.*
+
+# SQLite caches (meteo requests, etc.)
+*.sqlite
+.cache.sqlite
+meteo_cache.sqlite
+
+# Generated API outputs & large local data
+static/
+static/analysis/
+
+# Data files (regenerate or keep locally; map assets live in frontend/public)
 *.xlsx
 *.csv
-*/static
 *.geojson
-static/analysis/
-venv/
-__pycache__/
-*.pyc
+
+# OS
+.DS_Store

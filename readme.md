@@ -51,10 +51,18 @@ The frontend is managed via npm. Ensure you have Node.js installed.
     npm install
     ```
 
-3.  **Start the development server:**
+3.  **Configure Mapbox (required for the map after login):**
+    ```bash
+    cp .env.example .env
+    ```
+    Edit `.env` and set `REACT_APP_MAPBOX_ACCESS_TOKEN` to a [Mapbox public access token](https://account.mapbox.com/access-tokens/). Restart `npm start` after changing `.env`.
+
+4.  **Start the development server:**
     ```bash
     npm start
     ```
+
+Default login: username `admin`, password `admin` (stored in the browser’s local storage).
 
 ---
 

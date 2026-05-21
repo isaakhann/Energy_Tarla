@@ -1,7 +1,11 @@
 // ---- Globals ----
 const mapboxgl = window.mapboxgl;
 
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
+if (!mapboxgl) {
+  console.error(
+    'Mapbox GL JS is not loaded. Ensure mapbox-gl.js is included in public/index.html.'
+  );
+}
 
 let map,
   currentProvince = 'all',
@@ -14,6 +18,20 @@ function toggleSidebar() {
 
 // --- Entry point ---
 function initializeMap(styleName = 'satellite-streets-v12') {
+  if (!mapboxgl) {
+    throw new Error(
+      'Mapbox GL JS is not loaded. Check public/index.html includes the Mapbox script.'
+    );
+  }
+
+  const token = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN?.trim();
+  if (!token) {
+    throw new Error(
+      'Mapbox access token is missing. Add REACT_APP_MAPBOX_ACCESS_TOKEN to frontend/.env and restart npm start. Get a token at https://account.mapbox.com/access-tokens/'
+    );
+  }
+  mapboxgl.accessToken = token;
+
   map = new mapboxgl.Map({
     container: 'map',
     style: `mapbox://styles/mapbox/${styleName}`,
@@ -24,6 +42,8 @@ function initializeMap(styleName = 'satellite-streets-v12') {
     antialias: true,
     projection: 'globe',
   });
+
+  window.__legacyMapInstance = map;
 
   map.on('load', () => {
     addLayersAndSources();

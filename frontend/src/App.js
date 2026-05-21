@@ -17,6 +17,7 @@ function AppInner() {
   const { currentUser, logout } = useAuth();
   const [Layout, setLayout] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [mapError, setMapError] = useState(null);
 
   // Completely clean the previous Mapbox instance so re-login works without refresh
   const resetMap = () => {
@@ -51,9 +52,11 @@ function AppInner() {
   useEffect(() => {
     if (!currentUser) {
       setLayout(null);
+      setMapError(null);
       resetMap();
       return;
     }
+    setMapError(null);
     import('./components/LegacyLayout').then((m) => setLayout(() => m.default));
   }, [currentUser]);
 
@@ -66,29 +69,25 @@ function AppInner() {
     let tick = setInterval(async () => {
       if (!window.mapboxgl || !document.getElementById('map')) return;
 
-      // Patch Map constructor once so we can track/remove the live instance
-      if (!window.__mapboxPatchApplied) {
-        const OriginalMap = window.mapboxgl.Map;
-        window.mapboxgl.Map = function (...args) {
-          const inst = new OriginalMap(...args);
-          window.__legacyMapInstance = inst;
-          return inst;
-        };
-        window.mapboxgl.Map.prototype = OriginalMap.prototype;
-        Object.setPrototypeOf(window.mapboxgl.Map, OriginalMap);
-        window.__mapboxPatchApplied = true;
-      }
-
       if (window.__legacyMapInit) {
         clearInterval(tick);
         return;
       }
 
-      const legacy = await import('./legacy/indexLegacy');
-      Object.assign(window, legacy); // expose your original functions
-      window.__legacyMapInit = true; // guard against double init
-      legacy.initializeMap(); // call your original entry point
-      setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
+      try {
+        const legacy = await import('./legacy/indexLegacy');
+        Object.assign(window, legacy);
+        window.__legacyMapInit = true;
+        legacy.initializeMap();
+        setMapError(null);
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
+      } catch (err) {
+        setMapError(
+          err?.message ||
+            'The map failed to load. Check the browser console for details.'
+        );
+        window.__legacyMapInit = false;
+      }
       clearInterval(tick);
     }, 50);
 
@@ -111,6 +110,23 @@ function AppInner() {
       </button>
 
       {Layout && <Layout />}
+
+      {mapError && (
+        <div
+          className="auth-error"
+          style={{
+            position: 'fixed',
+            top: 56,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1300,
+            maxWidth: 'min(520px, 92vw)',
+          }}
+          role="alert"
+        >
+          {mapError}
+        </div>
+      )}
 
       <SettingsModal
         open={settingsOpen}
